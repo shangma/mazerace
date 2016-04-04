@@ -1,0 +1,120 @@
+#:kivy 1.9.1
+
+<MazeraceBall>:
+    canvas:
+        Color:
+            rgba: self.color
+        Ellipse:
+            pos: self.pos
+            size: self.size
+
+<MazeraceWall>:
+    canvas:
+        Color:
+            rgba: self.color
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<MazeraceGui>:
+    maze_area: maze_area
+    name_input: name_input
+    manager_box: manager_box
+    control_box: control_box
+    name_input: name_input
+
+    BoxLayout:
+        size: root.size
+
+        Widget:
+            id: maze_area
+            size_hint: 0.6, 1
+            
+        BoxLayout:
+            id: control_box
+            size_hint: 0.4, 1
+            orientation: "vertical"
+            padding: 4
+            spacing: 4
+            
+            BoxLayout:
+                size_hint: 1, 0.2
+
+                Label:
+                    text: "Game: {}".format(root.game_state)
+
+            BoxLayout:
+                size_hint: 1, 0.2
+                spacing: 4
+
+                TextInput:
+                    id: name_input
+                    size_hint: 0.5, 1
+                    hint_text: "Your name"
+                    multiline: False
+                    disabled: root.my_index>=0 or not root.game_state=='open'
+                    on_text_validate: root.join(self.text)
+
+                Button:
+                    size_hint: 0.25, 1
+                    text: "Join"
+                    disabled: root.my_index>=0 or not root.game_state=='open'
+                    on_release: root.join(name_input.text)
+
+                Button:
+                    size_hint: 0.25, 1
+                    text: "Leave"
+                    disabled: root.my_index<0
+                    on_release: root.leave()
+
+            GridLayout:
+                size_hint: 1, 0.2
+                cols: 2
+
+                Label:
+                    color: root.player0.color
+                    text: root.player0.name
+
+                Label:
+                    color: root.player2.color
+                    text: root.player2.name
+
+                Label:
+                    color: root.player3.color
+                    text: root.player3.name
+
+                Label:
+                    color: root.player1.color
+                    text: root.player1.name
+
+            BoxLayout:  # Note: gets removed if not server host's client
+                id: manager_box
+                size_hint: 1, 0.2
+                disabled: not (root.game_state in ['open', 'full'] and root.numplayers>0)
+
+                BoxLayout:
+                    orientation: "vertical"
+                    size_hint: 0.8, 1
+
+                    Slider:
+                        id: size_slider
+                        range: 10, 25
+                        value:10
+                        step: 5
+
+                    Label:
+                        text: "{x}X{x}".format(x=int(size_slider.value))
+
+                Button:
+                    size_hint: 0.2, 1
+                    text: "Go"
+                    on_release: root.start_game(size_slider.value)
+
+            ScrollView:
+
+                Label:
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    text_size: self.size[0], None
+                    text: root.logtext
+                    markup: True

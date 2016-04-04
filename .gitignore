@@ -1,0 +1,5 @@
+bin/
+.buildozer/
+env/
+mazerace.ini
+android.log
