@@ -1,13 +1,13 @@
 import socket, datetime
 ### Player-related helpers
 
-DEBUG_OSC = True
+DEBUG_OSC = False
 GRAVITY_FACTOR = 0.1
 BOUNCE_FACTOR = 0.3
 
 _PLAYER_CORNER_HINTS = [ [1, 0], [0, 1], [1, 1], [0, 0] ]
-_PLAYER_COLORS = [ [0, 0.75, 0, 1], [1, 0, 0, 1], [0.25, 0.25, 1, 1], [1, 1, 0, 1] ]
-_PLAYER_MARKUP_COLORS = [ "#00BF00", "#FF0000", "3F3FFF", "#FFFF00" ]
+_PLAYER_COLORS = [ [0, 1, 0, 1], [1, 0.25, 0.25, 1], [0.5, 0.5, 1, 1], [1, 1, 0, 1] ]
+_PLAYER_MARKUP_COLORS = [ "#00FF00", "#FF3F3F", "7F7FFF", "#FFFF00" ]
 
 def player_color(index):
     return _PLAYER_COLORS[index]

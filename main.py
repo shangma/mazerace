@@ -56,31 +56,37 @@ class MazeraceCell(Widget):
         self.canvas.clear()
         with self.canvas:
             if win_color is not None:
-                win_color[3] = 0.5  # Transparency for contrast's sake
+                win_color=win_color[:3]+[0.3]  # Transparency for contrast's sake
                 Color(*win_color)
                 Rectangle(pos=self.pos, size=self.size)
+                Color(1, 1, 1, 1)
             for p in self.gui.players:
                 if p.index!=self.gui.my_index and p.row==self.row and p.col==self.col:
                     Color(*p.color)
                     r, c = p.corner_hint
                     Rectangle(pos=(self.x+self.width*(0.05+c*.5), self.y+self.height*(0.05+r*0.5)), size=(self.width*0.25, self.height*0.25))
+                    Color(1, 1, 1, 1)
             # Redraw walls
             for c in self.children:
                 self.remove_widget(c)
                 self.add_widget(c)
 
 class MazeraceWall(Widget):
-    color = [1, 1, 1, 1]
+    color = ListProperty()
+    vertical = BooleanProperty(False)
 
-    def __init__(self, color=None, *args, **kwargs):
-        if color is not None:
+    def __init__(self, color=None, vertical=False, *args, **kwargs):
+        self.vertical = vertical
+        if color is None:
+            self.color = [1, 1, 1, 1]
+        else:
             self.color = color
         super(MazeraceWall, self).__init__(*args, **kwargs)
 
     def bounce_ball(self, ball):
         if self.collide_widget(ball):
             vx, vy = ball.velocity
-            if self.width<=self.height:
+            if self.vertical:
                 ball.velocity_x = -BOUNCE_FACTOR*vx
                 while self.collide_widget(ball): # get out of the parking lot
                     ball.pos[0] += ball.velocity_x
@@ -114,6 +120,7 @@ class MazeraceGui(Widget):
     game_state = StringProperty('offline')
     natural_orientation_portrait = False
     maze_area = ObjectProperty()
+    intro = ObjectProperty()
     logtext = StringProperty()
     control_box = ObjectProperty()
     manager_box = ObjectProperty()
@@ -169,6 +176,12 @@ class MazeraceGui(Widget):
         popup.open()
 
     def before_client_start(self):
+        if self.app.net.client_host=="localhost":
+            self.intro.source = "single.rst"
+        elif self.app.net.is_server_host:
+            self.intro.source = "server.rst"
+        else:
+            self.intro.source = "client.rst"
         orientation = self.app.config.get('mazerace','device_natural_orientation')
         if not orientation.lower() in ['portrait','landscape']:
             self.show_popup(title="Check device orientation",
@@ -286,13 +299,13 @@ and press [b]OK[/b].""",
                 ay = tmp
         except:
             ax, ay = 0, 3  # for debugging on desktop
+        self.ball.move()
         self.ball.acceleration = Vector(ax or 0, ay or 0)*-GRAVITY_FACTOR
         ball_row, ball_col = self.ball_row_col()
         for r in range(max(ball_row-1,0),min(ball_row+2,self.rows)):
             for c in range(max(ball_col-1,0),min(ball_col+2,self.cols)):
                 for w in self.maze[r][c].children:
                     w.bounce_ball(self.ball)
-        self.ball.move()
         self.update_ball_pos()
 
     def _maze_builder(self, maze_strings):
@@ -325,6 +338,7 @@ and press [b]OK[/b].""",
                         y=cell.y-0.1*self.row_height))
                 if c==0:  # Left wall
                     cell.add_widget(MazeraceWall(
+                        vertical = True,
                         color=cell.goal_of and cell.goal_of.color or None,
                         width=0.1*cell.width,
                         height=0.8*cell.height,
@@ -332,6 +346,7 @@ and press [b]OK[/b].""",
                         y=cell.y+0.05*self.row_height))
                 if maze_strings[r][c] in '|7':  # Right wall
                     cell.add_widget(MazeraceWall(
+                        vertical = True,
                         color=c==self.cols-1 and cell.goal_of and \
                             cell.goal_of.color or None,
                         width=0.1*cell.width,
@@ -356,9 +371,9 @@ and press [b]OK[/b].""",
             yield
         self.my_row, self.my_col = home_corner(self.my_index, self.rows, self.cols)
         self.ball = MazeraceBall(self.me().color,
-            size=(self.col_width/3, self.row_height/3),
-            x=self.maze_area.x+(self.my_col+0.4)*self.col_width,
-            y=self.maze_area.y+(self.my_row+0.4)*self.row_height)
+            size=(self.col_width*0.4, self.row_height*0.4),
+            x=self.maze_area.x+(self.my_col+0.35)*self.col_width,
+            y=self.maze_area.y+(self.my_row+0.35)*self.row_height)
         self.maze_area.add_widget(self.ball)
         self.update_ball_pos(force=True)
         yield
@@ -371,6 +386,10 @@ class MazeraceApp(App):
 
     def build_config(self, config):
         config.setdefaults('mazerace', {'device_natural_orientation': 'unknown'})
+        if platform=="android":
+            Config.set('kivy', 'log_enable', 1)
+            Config.set('kivy', 'log_dir', '/sdcard/.mazerace-logs')
+            Config.set('kivy', 'log_level', 'info')
 
     def build(self):
         self.net = Gamenet()
@@ -476,8 +495,6 @@ class MazeraceApp(App):
             def keep_screen_on():
                 PythonActivity.mActivity.getWindow().addFlags(Params.FLAG_KEEP_SCREEN_ON)
             keep_screen_on()
-            Config.set('kivy', 'log_dir', '/sdcard/.mazerace-logs')
-            Config.set('kivy', 'log_enable', 0)  # Comment out when debugging
         self.gui.before_client_start()
 
     def on_stop(self):

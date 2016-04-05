@@ -7,6 +7,7 @@
         Ellipse:
             pos: self.pos
             size: self.size
+            source: "radial.png"
 
 <MazeraceWall>:
     canvas:
@@ -15,9 +16,11 @@
         Rectangle:
             pos: self.pos
             size: self.size
+            source: self.vertical and "v-wall.png" or "h-wall.png"
 
 <MazeraceGui>:
     maze_area: maze_area
+    intro: intro
     name_input: name_input
     manager_box: manager_box
     control_box: control_box
@@ -29,16 +32,22 @@
         Widget:
             id: maze_area
             size_hint: 0.6, 1
-            
+
+            RstDocument:
+                id: intro
+                pos: self.parent.pos
+                size: self.parent.size
+                background_color: 0.75, 0.75, 0.75, 1
+
         BoxLayout:
             id: control_box
             size_hint: 0.4, 1
             orientation: "vertical"
             padding: 4
-            spacing: 4
-            
+            spacing: 6
+
             BoxLayout:
-                size_hint: 1, 0.2
+                size_hint: 1, 0.1
 
                 Label:
                     text: "Game: {}".format(root.game_state)
@@ -50,7 +59,7 @@
                 TextInput:
                     id: name_input
                     size_hint: 0.5, 1
-                    hint_text: "Your name"
+                    hint_text: "Your nickname"
                     multiline: False
                     disabled: root.my_index>=0 or not root.game_state=='open'
                     on_text_validate: root.join(self.text)
@@ -67,8 +76,17 @@
                     disabled: root.my_index<0
                     on_release: root.leave()
 
+            Label:
+                size_hint: 1, 0.1
+                text: "Game table"
+
             GridLayout:
-                size_hint: 1, 0.2
+                size_hint: 1, 0.3
+                padding: 4
+                canvas:
+                    Line:
+                        width: 1
+                        rectangle: self.x+2, self.y+2, self.width-4, self.height-4
                 cols: 2
 
                 Label:
@@ -87,7 +105,9 @@
                     color: root.player1.color
                     text: root.player1.name
 
-            BoxLayout:  # Note: gets removed if not server host's client
+            # manager_box removed unless client is on server's host
+            # (aka table manager)
+            BoxLayout:
                 id: manager_box
                 size_hint: 1, 0.2
                 disabled: not (root.game_state in ['open', 'full'] and root.numplayers>0)

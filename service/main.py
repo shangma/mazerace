@@ -279,7 +279,7 @@ class Server:
 
 if __name__=='__main__':
     if platform=='android':
+        Config.set('kivy', 'log_enable', 1)
         Config.set('kivy', 'log_dir', '/sdcard/.mazerace-logs/server')
-        Config.set('kivy', 'log_enable', 0)  # Comment out when debugging
- 
+        Config.set('kivy', 'log_level', 'info')
     Server().serve()

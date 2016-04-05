@@ -13,7 +13,7 @@ package.domain = org.test
 source.dir = .
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,atlas,html,css,map,js,json,ogg
+source.include_exts = py,png,jpg,kv,atlas,html,css,map,js,json,ogg,rst
 
 # (list) Source files to exclude (let empty to not exclude anything)
 #source.exclude_exts = spec
@@ -33,7 +33,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma seperated e.g. requirements = sqlite3,kivy
-requirements = kivy, plyer
+requirements = kivy, plyer, docutils, pygments
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -82,7 +82,9 @@ android.api = 18
 android.minapi = 9
 
 # (int) Android SDK version to use
-android.sdk = 24
+# 20 is old enough so that permissions are determined during installation.
+# otherwise it doesn't run on android 6 :(
+android.sdk = 20
 
 # (str) Android NDK version to use
 #android.ndk = 9c
