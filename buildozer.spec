@@ -25,7 +25,7 @@ source.exclude_dirs = tests, bin
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 0.1
+version = 0.2
 
 # (str) Application versioning (method 2)
 #version.regex = __version__ = ['"](.*)['"]
@@ -43,10 +43,10 @@ requirements = kivy, plyer, docutils, pygments
 #garden_requirements =
 
 # (str) Presplash of the application
-presplash.filename = splash.jpg
+presplash.filename = %(source.dir)s/images/splash.jpg
 
 # (str) Icon of the application
-icon.filename = %(source.dir)s/icon.png
+icon.filename = %(source.dir)s/images/icon.png
 
 # (str) Supported orientation (one of landscape, portrait or all)
 orientation = landscape

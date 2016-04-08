@@ -5,8 +5,7 @@ of a *game table* only you can join.
 To play
 -------
 
-* Join the game by choosing a nickname for yourself and clicking **Join**
-  (this, of course, makes more sense in a multiplayer game).
+* Join the game by clicking **Join** (In *single player* mode, your nickname is set to "Player" by default, but feel free to change it before you join).
 * Use the slider to select the size of the maze.
 * Click **Go**. It will take some time to draw the maze, and then —
   a ball will appear inside it.

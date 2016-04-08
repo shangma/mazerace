@@ -1,6 +1,6 @@
 from kivy.lib import osc
 from kivy.logger import Logger
-from kivy.config import Config
+from kivy.config import Config, ConfigParser
 from kivy import platform
 
 from game import Gamenet, now, seconds_since, sec2min, \
@@ -39,7 +39,7 @@ class Server:
     # open (users can join)
     # full (there are already 4 players)
     # starting (maze is being generated)
-    # ready (maze was generated, not all players are ready)
+    # drawing (player devices are drawing the maze)
     # on (we're playing)
     state = ''
     clients = {}
@@ -60,7 +60,7 @@ class Server:
         if not raw:
             data = json.dumps(data)
         if host is not None:
-            if DEBUG_OSC and not osc_addr in ['/pong', '/ready']:
+            if DEBUG_OSC and not osc_addr in ['/pong', '/draw']:
                 Logger.info('sendind: {}'.format([osc_addr, data, host]))
             if self.net.valid_host(host):
                 osc.sendMsg(osc_addr, [ data ], ipAddr=host, port=self.net.client_port)
@@ -169,9 +169,8 @@ class Server:
         osc.readQueue(self.oscid)
         self.drop_stale_clients()
         if self.check_for_new_maze():
-            self.state = 'ready'
-            self.osc_send('/ready',{"maze": self.maze})
-            # self.osc_send('/log',{"message": "Get ready ..."})
+            self.state = 'drawing'
+            self.osc_send('/draw',{"maze": self.maze})
 
     def parse_message(self, m):
         try:
@@ -247,7 +246,7 @@ class Server:
         except:
             return
         self.osc_send('/pos', {"index": player.index, "row": player.row, "col": player.col})
-        if self.state=='ready':  # Check whether all players are ready
+        if self.state=='drawing':  # Check whether all players are ready
             if not filter(lambda p: p is not None and p.row is None, self.players):
                 self.state = 'on'
                 self.game_start_time = now()
@@ -279,7 +278,15 @@ class Server:
 
 if __name__=='__main__':
     if platform=='android':
-        Config.set('kivy', 'log_enable', 1)
-        Config.set('kivy', 'log_dir', '/sdcard/.mazerace-logs/server')
-        Config.set('kivy', 'log_level', 'info')
+        try:
+            config = ConfigParser()
+            config.read('/sdcard/.mazerace.ini')
+            if config.get('mazerace', 'debug').lower()=='yes':
+                Config.set('kivy', 'log_enable', 1)
+                Config.set('kivy', 'log_dir', '/sdcard/mazerace-logs/server')
+                Config.set('kivy', 'log_level', 'info')
+            else:
+                Config.set('kivy', 'log_enable', 0)
+        except:
+            Config.set('kivy', 'log_enable', 0)
     Server().serve()

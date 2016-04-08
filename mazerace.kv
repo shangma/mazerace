@@ -1,4 +1,14 @@
 #:kivy 1.9.1
+#:import Logger kivy.logger.Logger
+
+<FramedBoxLayout>:
+    padding: 4
+    canvas:
+        Color:
+            rgba: 1, 1, 1, 1
+        Line:
+            width: 1
+            rectangle: self.x+2, self.y+2, self.width-4, self.height-4
 
 <MazeraceBall>:
     canvas:
@@ -7,7 +17,7 @@
         Ellipse:
             pos: self.pos
             size: self.size
-            source: "radial.png"
+            source: "images/radial.png"
 
 <MazeraceWall>:
     canvas:
@@ -16,7 +26,85 @@
         Rectangle:
             pos: self.pos
             size: self.size
-            source: self.vertical and "v-wall.png" or "h-wall.png"
+            source: self.vertical and "images/v-wall.png" or "images/h-wall.png"
+
+<MazeraceSetup>
+    gravity_slider: gravity_slider
+    debug_button: debug_button
+
+    BoxLayout:
+        pos: self.parent.pos
+        size: self.parent.size
+        orientation: "vertical"
+        padding: 8
+        spacing: 4
+
+        FramedBoxLayout:
+            size_hint: 1, 0.2
+            orientation: "vertical"
+
+            Label:
+                text: "Tilt sensitivity (gravity)"
+
+            Slider:
+                id: gravity_slider
+                range: 0.05, 0.5
+                step: 0.05
+
+        FramedBoxLayout:
+            size_hint: 1, 0.3
+            orientation: "vertical"
+
+            Label:
+                markup: True
+                text: "Device orientation (if ball doesn't respond correctly to tilt)"
+
+            BoxLayout:
+
+                BoxLayout:
+                    orientation: "vertical"
+
+                    CheckBox:
+                        id: portrait_box
+                        group: "orientation"
+                        active: root.orientation_portrait
+                        on_active: root.orientation_portrait = True
+
+                    Label:
+                        text: "Portrait (phone)"
+                        halign: "left"
+
+                BoxLayout:
+                    orientation: "vertical"
+
+                    CheckBox:
+                        id: landscape_box
+                        group: "orientation"
+                        active: not root.orientation_portrait
+                        on_active: root.orientation_portrait = False
+
+                    Label:
+                        text: "Landscape (tablet)"
+
+        FramedBoxLayout:
+            size_hint: 1, 0.3
+            orientation: "vertical"
+            padding: 8
+
+            Label:
+                markup: True
+                text: "Debug (requires app restart)"
+
+            ToggleButton:
+                id: debug_button
+                markup: True
+                text: "write boring logs to [i]/sdcard/mazerace-logs/[/i]"
+
+        Button:
+            size_hint: 1, 0.2
+            text: "Save"
+            disabled: not (portrait_box.active or landscape_box.active)
+            on_release: root.opener.setup_done()
 
 <MazeraceGui>:
     maze_area: maze_area
@@ -24,7 +112,6 @@
     name_input: name_input
     manager_box: manager_box
     control_box: control_box
-    name_input: name_input
 
     BoxLayout:
         size: root.size
@@ -46,11 +133,18 @@
             padding: 4
             spacing: 6
 
-            BoxLayout:
+            # This kludge is the easiest way I've found
+            # to get a small icon button for setup
+            ActionBar:
                 size_hint: 1, 0.1
 
-                Label:
-                    text: "Game: {}".format(root.game_state)
+                ActionView:
+
+                    ActionPrevious:
+                        app_icon: "images/gear.png"
+                        previous_image: "images/empty.png"
+                        title: "Game: {}".format(root.game_state)
+                        on_release: root.show_setup()
 
             BoxLayout:
                 size_hint: 1, 0.2
@@ -82,8 +176,9 @@
 
             GridLayout:
                 size_hint: 1, 0.3
-                padding: 4
                 canvas:
+                    Color:
+                        rgba: 0.5, 0.5, 0.5, 1
                     Line:
                         width: 1
                         rectangle: self.x+2, self.y+2, self.width-4, self.height-4
@@ -119,7 +214,7 @@
                     Slider:
                         id: size_slider
                         range: 10, 25
-                        value:10
+                        value: 10
                         step: 5
 
                     Label:

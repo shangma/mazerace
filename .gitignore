@@ -3,3 +3,4 @@ bin/
 env/
 mazerace.ini
 android.log
+*.pyc

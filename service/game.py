@@ -1,9 +1,8 @@
 import socket, datetime
 ### Player-related helpers
 
-DEBUG_OSC = False
-GRAVITY_FACTOR = 0.1
-BOUNCE_FACTOR = 0.3
+DEBUG_OSC = True
+BOUNCE_FACTOR = 0.4
 
 _PLAYER_CORNER_HINTS = [ [1, 0], [0, 1], [1, 1], [0, 0] ]
 _PLAYER_COLORS = [ [0, 1, 0, 1], [1, 0.25, 0.25, 1], [0.5, 0.5, 1, 1], [1, 1, 0, 1] ]
